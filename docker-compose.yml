@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: sportify_phpmyadmin
+    environment:
+      PMA_HOST: db  # Accès à la base de données via le service 'db'
+      MYSQL_ROOT_PASSWORD: ''  # Utilisation d'un mot de passe vide
+    ports:
+      - "8080:80"  # Exposition de PhpMyAdmin sur le port 8080
+    networks:
+      - sportify_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:80 || exit 1"]
+      interval: 10s
+      retries: 3
+      timeout: 5s
+
+  backend:
+    build:
+      context: ./backend/sportify
+      dockerfile: Dockerfile
+    container_name: sportify_backend
+    environment:
+      - DB_HOST=db  # Utiliser le service 'db' comme base de données
+      - DB_PORT=3306
+      - DB_NAME=sportify
+      - DB_USER=root
+      - DB_PASSWORD=  # Si vous avez un mot de passe pour la DB
+    ports:
+      - "8000:8000"
+    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]  # Lancement des migrations avant de démarrer le serveur Django
+    depends_on:
+      - db  # S'assurer que la base de données est prête avant de lancer le backend
+    networks:
+      - sportify_net
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_DATABASE: sportify
+      MYSQL_ROOT_PASSWORD: ''  # Utilisation d'un mot de passe vide pour MySQL
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'  # Autoriser un mot de passe vide pour root
+    ports:
+      - "3307:3306"  # Changer le port exposé pour éviter les conflits
+    volumes:
+      - mysql_data:/var/lib/mysql  # Volume pour persister les données
+    networks:
+      - sportify_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  frontend:
+    build:
+      context: ./frontend/sportify
+      dockerfile: Dockerfile
+    container_name: sportify_frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - sportify_net
+
+networks:
+  sportify_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
