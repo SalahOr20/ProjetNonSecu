@@ -5,15 +5,15 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || !user.email) {
+      console.error("Utilisateur non connecté");
+      return;
+    }
 
-    axios.get('http://localhost:8000/api/app/my-orders/', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    })
-    .then(res => setOrders(res.data))
-    .catch(err => console.error(err));
+    axios.get(`http://localhost:8000/api/app/my-orders/?email=${user.email}`)
+      .then(res => setOrders(res.data))
+      .catch(err => console.error(err));
   }, []);
 
   if (!orders.length) return <p>Aucune commande trouvée.</p>;
@@ -25,7 +25,7 @@ const OrderHistory = () => {
         <div key={order.id}>
           <h4>Commande #{order.id} - Total : {order.total_price} €</h4>
           <ul>
-            {order.order_items.map(item => (
+            {order.items.map(item => (
               <li key={item.id}>
                 Produit ID : {item.product}, Quantité : {item.quantity}
               </li>
