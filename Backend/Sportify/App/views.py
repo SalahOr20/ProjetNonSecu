@@ -178,7 +178,7 @@ def login_view(request):
 
         # Directly checking email and password in the database (without hashing)
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM app_customuser WHERE email = %s AND password = %s", [email, password])
+        cursor.execute("SELECT * FROM App_customuser WHERE email = %s AND password = %s", [email, password])
         user = cursor.fetchone()
 
         if user:
