@@ -22,8 +22,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
-    order_items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(many=True, read_only=True)  # <-- ici on met "items"
 
     class Meta:
         model = Order
-        fields = ['id', 'user_email', 'total_price', 'created_at', 'updated_at', 'is_paid', 'order_items']
+        fields = ['id', 'user_email', 'total_price', 'created_at', 'updated_at', 'is_paid', 'items']

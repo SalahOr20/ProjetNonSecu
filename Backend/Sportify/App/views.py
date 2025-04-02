@@ -73,51 +73,68 @@ def order_product(request, product_id):
     return HttpResponse("Méthode non autorisée", status=405)
 
 
-@api_view(['POST'])
+@csrf_exempt
 def create_order(request):
-    # Log the incoming data
-    print("Request Data:", request.data)
-
-    email = request.data.get('email')
-    if not email:
-        return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        user = CustomUser.objects.get(email=email)
-    except CustomUser.DoesNotExist:
-        return Response({"error": f"User with email {email} not found"}, status=status.HTTP_404_NOT_FOUND)
-    product_ids = request.data.get('product_ids', [])
-    quantities = request.data.get('quantities', [])
-
-    if not isinstance(product_ids, list) or not isinstance(quantities, list):
-        return Response({"error": "'product_ids' and 'quantities' must be lists"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if len(product_ids) != len(quantities):
-        return Response({"error": "The number of products and quantities must match"},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    # Create the order
-    order = Order.objects.create(user=user)
-
-    # Add products to the order
-    for product_id, quantity in zip(product_ids, quantities):
+    if request.method == "POST":
         try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return Response({"error": f"Product with id {product_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        OrderItem.objects.create(order=order, product=product, quantity=quantity)
+        print("Request Data:", data)
 
-    order.calculate_total()
+        email_data = data.get('email')
+        if not email_data:
+            return JsonResponse({"error": "Email is required"}, status=400)
 
-    serializer = OrderSerializer(order)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        email = email_data.get('email') if isinstance(email_data, dict) else email_data
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return JsonResponse({"error": f"User with email {email} not found"}, status=404)
+
+        product_ids = data.get('product_ids', [])
+        quantities = data.get('quantities', [])
+
+        if not isinstance(product_ids, list) or not isinstance(quantities, list):
+            return JsonResponse({"error": "'product_ids' and 'quantities' must be lists"}, status=400)
+
+        if len(product_ids) != len(quantities):
+            return JsonResponse({"error": "The number of products and quantities must match"}, status=400)
+
+        # Créer la commande
+        order = Order.objects.create(user=user)
+
+        # Ajouter les articles à la commande
+        for product_id, quantity in zip(product_ids, quantities):
+            try:
+                product = Product.objects.get(id=product_id)
+                OrderItem.objects.create(order=order, product=product, quantity=quantity)
+            except Product.DoesNotExist:
+                return JsonResponse({"error": f"Product with id {product_id} not found"}, status=404)
+
+        order.calculate_total()
+
+        return JsonResponse({"message": "Order created successfully", "order_id": order.id}, status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @api_view(['GET'])
 def get_orders(request):
-    user = request.user  # Assuming you're using authentication and the user is logged in
-    orders = Order.objects.filter(user=user)
+    email = request.GET.get('email')
+    if not email:
+        return JsonResponse({'error': 'Email is required'}, status=400)
+
+    try:
+        user = CustomUser.objects.get(email=email)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+    orders = Order.objects.filter(user=user).order_by('-created_at')
     serializer = OrderSerializer(orders, many=True)
+    print(serializer.data)
     return JsonResponse(serializer.data, safe=False)
 
 
