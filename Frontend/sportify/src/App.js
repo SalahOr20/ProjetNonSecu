@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
 import Home from './components/Home';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
@@ -7,6 +8,7 @@ import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import OrderHistory from './components/OrderHistory';
+
 import { AuthContext } from './context/AuthContext';
 
 function App() {
@@ -15,16 +17,16 @@ function App() {
   return (
     <Router>
       <div>
-        <nav style={{ padding: '1rem', background: '#f5f5f5' }}>
-          <Link to="/" style={{ marginRight: '15px' }}>Accueil</Link>
-          <Link to="/products" style={{ marginRight: '15px' }}>Produits</Link>
+        <nav style={{ padding: '1rem', background: '#f5f5f5', display: 'flex', alignItems: 'center' }}>
+          <Link to="/" style={{ marginRight: '15px' }}>🏠 Accueil</Link>
+          <Link to="/products" style={{ marginRight: '15px' }}>🛍️ Produits</Link>
 
           {user ? (
             <>
-              <Link to="/cart" style={{ marginRight: '15px' }}>Panier</Link>
-              <Link to="/orders" style={{ marginRight: '15px' }}>Mes commandes</Link>
+              <Link to="/cart" style={{ marginRight: '15px' }}>🛒 Panier</Link>
+              <Link to="/orders" style={{ marginRight: '15px' }}>📦 Mes commandes</Link>
               <span style={{ marginRight: '15px' }}>👤 {user}</span>
-              <button onClick={logout}>Déconnexion</button>
+              <button onClick={logout} style={{ padding: '5px 10px', cursor: 'pointer' }}>Déconnexion</button>
             </>
           ) : (
             <>

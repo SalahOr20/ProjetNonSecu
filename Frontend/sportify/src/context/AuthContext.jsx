@@ -12,16 +12,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (username, tokens) => {
-    localStorage.setItem('accessToken', tokens.access);
-    localStorage.setItem('refreshToken', tokens.refresh);
+
     localStorage.setItem('username', username);
     setUser(username);
   };
 
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
+   
+    localStorage.removeItem('user');
     setUser(null);
   };
 

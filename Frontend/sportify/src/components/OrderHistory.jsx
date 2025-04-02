@@ -7,7 +7,7 @@ const OrderHistory = () => {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
 
-    axios.get('http://localhost:8000/api/products/my-orders/', {
+    axios.get('http://localhost:8000/api/app/my-orders/', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
