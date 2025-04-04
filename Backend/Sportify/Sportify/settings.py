@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'nsportify',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '3306',
     }
 }
