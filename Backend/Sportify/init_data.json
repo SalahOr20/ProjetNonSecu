@@ -1,0 +1,98 @@
+[
+  {
+    "model": "App.product",
+    "pk": 100,
+    "fields": {
+      "name": "Planche de surf",
+      "description": "Planche en mousse idéale pour débutants",
+      "price": 250.00,
+      "stock": 15,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 200,
+    "fields": {
+      "name": "Combinaison néoprène",
+      "description": "Combinaison 3/2mm pour l'été",
+      "price": 120.00,
+      "stock": 30,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 3,
+    "fields": {
+      "name": "Leash de surf",
+      "description": "Leash 6 pieds pour shortboard",
+      "price": 20.00,
+      "stock": 50,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 4,
+    "fields": {
+      "name": "Wax",
+      "description": "Wax tropicale pour eau chaude",
+      "price": 5.00,
+      "stock": 100,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 5,
+    "fields": {
+      "name": "Ailerons FCS",
+      "description": "Set de 3 ailerons pour planche de surf",
+      "price": 60.00,
+      "stock": 25,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 6,
+    "fields": {
+      "name": "Poncho de surf",
+      "description": "Poncho en microfibre pour se changer",
+      "price": 40.00,
+      "stock": 20,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 7,
+    "fields": {
+      "name": "Sac de transport",
+      "description": "Sac de transport pour planche de surf",
+      "price": 80.00,
+      "stock": 10,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  },
+  {
+    "model": "App.product",
+    "pk": 8,
+    "fields": {
+      "name": "Casquette surf",
+      "description": "Casquette anti-UV pour la plage",
+      "price": 25.00,
+      "stock": 40,
+      "created_at": "2025-04-04T00:00:00Z",
+      "updated_at": "2025-04-04T00:00:00Z"
+    }
+  }
+]

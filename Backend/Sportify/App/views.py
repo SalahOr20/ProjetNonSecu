@@ -11,17 +11,10 @@ from django.http import JsonResponse
 from django.db import connection
 
 # Créer un produit
-@api_view(['POST'])
-def create_product(request):
-    if request.method == 'POST':
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
+@csrf_exempt
 def product_list(request):
     products = Product.objects.all()
     html = "<h1>Liste des Produits</h1><ul>"
@@ -29,26 +22,35 @@ def product_list(request):
     for product in products:
         html += f"""
             <li>
-              <a href="/product/{product.id}">
-                {product.name}
-              </a>: {product.description}
+                <a href="/product/{product.id}">
+                    {product.name}
+                </a>: {product.description}
+                <!-- Bouton retiré ou simple lien -->
             </li>
         """
 
     html += "</ul>"
-    return HttpResponse(html)
+    html += """
+        <script>
+            function showProduct(id) {
+                alert('Produit ' + id);
+            }
+        </script>
+    """
+    return HttpResponse(html, content_type='text/html')
+
+@csrf_exempt
 def product_detail(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
+    product = Product.objects.get(id=product_id)
     html = f"""
-        <h1>{product.name}</h1>
-        <p>{product.description}</p>
-        <p>Prix : {product.price} €</p>
-        <form method="post" action="/api/products/{product.id}/order/">
-            <label>Quantité :
-              <input type="number" name="quantity" value="1" min="1" />
-            </label><br />
-            <button type="submit">Commander</button>
-        </form>
+        <div>
+            <h1>{product.name}</h1>
+            <p>{product.description}</p>
+            <p>Prix: {product.price} €</p>
+            <script>
+                document.title = '{product.name}';
+            </script>
+        </div>
     """
     return HttpResponse(html)
 
@@ -62,15 +64,6 @@ def get_product(request, product_id):
     except Product.DoesNotExist:
         return Response({'error': 'App not found'}, status=status.HTTP_404_NOT_FOUND)
 
-@csrf_exempt
-def order_product(request, product_id):
-    if request.method == "POST":
-        quantity = request.POST.get("quantity")
-        product = get_object_or_404(Product, pk=product_id)
-
-        # ici tu peux enregistrer une commande dans un modèle "Order" si tu veux
-        return HttpResponse(f"<h2>Commande reçue pour {quantity} x {product.name}</h2>")
-    return HttpResponse("Méthode non autorisée", status=405)
 
 
 @csrf_exempt
@@ -141,57 +134,93 @@ def get_orders(request):
 
 
 @api_view(['POST'])
-def register_view (request):
-    if request.method == 'POST':
-        data = request.data.copy()
-        password = data.get('password')
+def register_view(request):
+    data = request.data.copy()
 
-        if not password:
-            return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+    # On accepte et stocke les données telles quelles, sans hash du mot de passe
+    serializer = CustomUserSerializer(data=data)
 
+    if serializer.is_valid():
+        user = serializer.save()  # Enregistre le mot de passe tel quel
+        return Response({'message': 'Utilisateur enregistré sans sécurité.'}, status=status.HTTP_201_CREATED)
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user_serializer = CustomUserSerializer(data=data)
-
-        if user_serializer.is_valid():
-            user = user_serializer.save()
-
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-
-        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@csrf_exempt  # Disable CSRF protection
+@csrf_exempt  # CSRF désactivé pour test uniquement
 def login_view(request):
-    if request.method == "POST":
+    if request.method != "POST":
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-        try:
-            data = json.loads(request.body)  # Read JSON data sent
-            email = data.get('email')
-            password = data.get('password')
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    try:
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-        if not email or not password:
-            return JsonResponse({'error': 'Email and password are required'}, status=400)
+    if not email or not password:
+        return JsonResponse({'error': 'Email and password are required'}, status=400)
 
-        # Directly checking email and password in the database (without hashing)
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM App_customuser WHERE email = %s AND password = %s", [email, password])
+    # 🔓 Requête SQL volontairement vulnérable à l'injection
+    raw_query = f"SELECT * FROM App_customuser WHERE email = '{email}' AND password = '{password}'"
+    print("Executing raw query:", raw_query)
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(raw_query)
         user = cursor.fetchone()
+    except Exception as e:
+        print("Erreur SQL :", e)
+        return JsonResponse({'error': f'SQL Error: {str(e)}'}, status=500)
 
-        if user:
-            # Return user data directly (id, email, username)
-            return JsonResponse({
-                'message': 'Login successful',
-                'user': {
-                    'id': user[0],       # Assuming 'id' is the first column
-                    'email': user[2],    # Assuming 'email' is the second column
-                    'username': user[3], # Assuming 'username' is the third column
-                }
-            })
-        else:
-            return JsonResponse({'error': 'Invalid credentials'}, status=401)
+    if user:
+        return JsonResponse({
+            'message': 'Login successful',
+            'user': {
+                'id': user[0],
+                'email': user[2],
+                'username': user[3],
+            }
+        })
+    else:
+        return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+@csrf_exempt
+def order_list(request):
+    # Pas de vérification d'authentification
+    orders = Order.objects.all()  # Montre TOUTES les commandes, pas seulement celles de l'utilisateur
+    html = "<h1>Historique des commandes</h1><ul>"
+    
+    for order in orders:
+        # IDOR: les IDs sont exposés et accessibles directement
+        html += f"""
+            <li>
+                <a href="/order/{order.id}">Commande #{order.id}</a>
+                (Total: {order.total} €)
+            </li>
+        """
+    
+    html += "</ul>"
+    return HttpResponse(html)
+
+@csrf_exempt
+def order_detail(request, order_id):
+    # IDOR: Pas de vérification que l'order appartient à l'utilisateur connecté
+    try:
+        order = Order.objects.get(id=order_id)
+        html = f"""
+            <h2>Détails de la commande #{order.id}</h2>
+            <p>Client: {order.user.username}</p>
+            <p>Email: {order.user.email}</p>
+            <ul>
+        """
+        
+        for item in order.items.all():
+            html += f"""
+                <li>{item.product.name} - Quantité: {item.quantity}</li>
+            """
+        
+        html += "</ul>"
+        return HttpResponse(html)
+    except Order.DoesNotExist:
+        return HttpResponse("Commande non trouvée", status=404)
