@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     username: '',
-    password: '',
+    password: ''
   });
 
   const handleChange = (e) => {
@@ -20,18 +21,70 @@ const RegisterForm = () => {
       console.log(res.data);
     } catch (err) {
       console.error(err.response?.data || err.message);
-      alert('Erreur lors de l’inscription');
+      alert('Erreur lors de l\'inscription');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Inscription</h2>
-      <input type="text" name="username" placeholder="Nom d'utilisateur" onChange={handleChange} required />
-      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Mot de passe" onChange={handleChange} required />
-      <button type="submit">S'inscrire</button>
-    </form>
+    <div className="auth-container">
+      <div className="form-container">
+        <h2 className="form-title">Inscription</h2>
+        
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="username" className="form-label">Nom d'utilisateur</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              className="form-input"
+              placeholder="Choisissez un nom d'utilisateur"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="form-input"
+              placeholder="Votre adresse email"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">Mot de passe</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              className="form-input"
+              placeholder="Choisissez un mot de passe"
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary w-full">
+            S'inscrire
+          </button>
+        </form>
+
+        <div className="auth-links">
+          <p>
+            Déjà un compte ?{' '}
+            <Link to="/login" className="text-primary">
+              Se connecter
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -6,8 +6,8 @@ const ProductList = () => {
   const [html, setHtml] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/app/', {
-      headers: { 'Accept': 'text/html' }
+    axios.get('http://localhost:8000/api/app/products/', {
+    
     })
       .then(res => setHtml(res.data))
       .catch(err => console.error(err));

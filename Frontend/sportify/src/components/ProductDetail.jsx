@@ -9,60 +9,59 @@ const ProductDetail = () => {
   const [showQuantity, setShowQuantity] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch product details on component mount
+  // Récupérer les détails du produit
   useEffect(() => {
     axios.get(`http://localhost:8000/api/app/${id}/`)
       .then(res => setProduct(res.data))
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        setProduct(null);
+      });
   }, [id]);
 
-  // Add product to the cart in localStorage
   const handleAddToCart = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const existingProduct = cart.find(item => item.id === product.id);
 
     if (existingProduct) {
-      existingProduct.quantity += quantity;  // Increment quantity if product is already in the cart
+      existingProduct.quantity += quantity;
     } else {
-      cart.push({ ...product, quantity });  // Add new product to the cart with the specified quantity
+      cart.push({ ...product, quantity });
     }
 
-    localStorage.setItem('cart', JSON.stringify(cart));  // Save updated cart in localStorage
-    navigate('/cart');  // Navigate to cart page
+    localStorage.setItem('cart', JSON.stringify(cart));
+    navigate('/cart');
   };
 
-  // Create the order with the products in the cart
   const handleOrderCreation = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     const productIds = cart.map(item => item.id);
     const quantities = cart.map(item => item.quantity);
 
-    const user = JSON.parse(localStorage.getItem('user'));  // Get user data from localStorage
-
-    if (!user) {
-      navigate('/login');  // If the user is not logged in, redirect to the login page
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || !user.email) {
+      navigate('/login');
       return;
     }
 
     const orderData = {
       product_ids: productIds,
-      quantities,
-      user_id: user.id,  // Send user ID to the backend
+      quantities: quantities,
+      email: user.email, // ✅ le backend attend "email", pas "user_id"
     };
 
-    // Send the order data to the backend
     axios.post('http://localhost:8000/api/app/create-order/', orderData)
       .then(response => {
         console.log("Order created:", response.data);
-        localStorage.removeItem('cart');  // Clear the cart after a successful order
-        navigate('/order-success');  // Redirect to order success page
+        localStorage.removeItem('cart');
+        navigate('/order-success');
       })
       .catch(error => {
         console.error("Error creating order:", error);
       });
   };
 
-  if (!product) return <p>Chargement...</p>;  // Show loading text until product is fetched
+  if (!product) return <p>Produit non trouvé ou en cours de chargement...</p>;
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -72,7 +71,7 @@ const ProductDetail = () => {
 
       {!showQuantity ? (
         <button
-          onClick={() => setShowQuantity(true)}  // Show quantity input on button click
+          onClick={() => setShowQuantity(true)}
           style={{ padding: '10px 20px', marginTop: '1rem', cursor: 'pointer' }}
         >
           Commander
@@ -85,20 +84,20 @@ const ProductDetail = () => {
               type="number"
               min="1"
               value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value))}  // Update quantity
+              onChange={(e) => setQuantity(parseInt(e.target.value))}
               style={{ width: '60px' }}
             />
           </label>
           <br /><br />
           <button
-            onClick={handleAddToCart}  // Add product to cart
+            onClick={handleAddToCart}
             style={{ padding: '10px 20px', cursor: 'pointer' }}
           >
             Ajouter au panier
           </button>
           <br />
           <button
-            onClick={handleOrderCreation}  // Proceed to order creation
+            onClick={handleOrderCreation}
             style={{ padding: '10px 20px', marginTop: '1rem', cursor: 'pointer' }}
           >
             Valider la commande

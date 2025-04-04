@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -23,7 +24,11 @@ const OrderHistory = () => {
       <h2>Vos commandes</h2>
       {orders.map(order => (
         <div key={order.id}>
-          <h4>Commande #{order.id} - Total : {order.total_price} €</h4>
+          <h4>
+            Commande #{order.id} - Total : {order.total_price} €
+            &nbsp;|&nbsp;
+            <Link to={`/order/${order.id}`}>Voir en détail</Link>
+          </h4>
           <ul>
             {order.items.map(item => (
               <li key={item.id}>
