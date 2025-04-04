@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'Sportify.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nsportify',
+        'NAME': 'sportify',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'db',
