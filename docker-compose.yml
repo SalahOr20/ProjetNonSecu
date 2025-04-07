@@ -30,7 +30,7 @@ services:
       - DB_PASSWORD=  # Si vous avez un mot de passe pour la DB
     ports:
       - "8000:8000"
-    command: ["sh", "-c", "sleep 50 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]  # Lancement des migrations avant de démarrer le serveur Django
+    command: ["sh", "-c", "sleep 50 && python manage.py migrate &&  python manage.py loaddata init_data.json && python manage.py runserver 0.0.0.0:8000"]  # Lancement des migrations avant de démarrer le serveur Django
     depends_on:
       - db  # S'assurer que la base de données est prête avant de lancer le backend
     networks:
